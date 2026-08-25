@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouBiData · Demo carrello pagamenti</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      margin: 0;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    .card {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .subtitle { color: #6e6e73; font-size: 14px; margin-bottom: 24px; }
+    .product { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid #eee; align-items: center; }
+    .product:last-child { border-bottom: none; }
+    .product img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background: #f0f0f0; }
+    .product .info { flex: 1; }
+    .product .name { font-weight: 600; }
+    .product .desc { color: #6e6e73; font-size: 13px; margin: 2px 0; }
+    .product .price { font-weight: 600; color: #0071e3; }
+    .product .qty {
+      width: 60px;
+      padding: 6px 8px;
+      border: 1px solid #d2d2d7;
+      border-radius: 6px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      font-size: 18px;
+      font-weight: 600;
+      border-top: 2px solid #1d1d1f;
+      margin-top: 8px;
+    }
+    .pay-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+    button.stripe {
+      padding: 14px;
+      background: #635bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button.stripe:hover:not(:disabled) { background: #4f47d6; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #paypal-button-container { min-height: 50px; }
+    .hint {
+      padding: 12px 14px;
+      background: #fff8e1;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #6a5419;
+      line-height: 1.6;
+    }
+    .hint code { background: rgba(0,0,0,0.06); padding: 1px 6px; border-radius: 3px; }
+    .nav { font-size: 13px; margin-bottom: 16px; }
+    .nav a { color: #0071e3; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav"><a href="/">← Demo email</a>  ·  <a href="/admin.html">📋 Back-office ordini</a></div>
+
+    <div class="card">
+      <h1>🛒 Demo pagamenti</h1>
+      <p class="subtitle">Carrello fittizio con checkout Stripe + PayPal in sandbox</p>
+
+      <div id="products">Caricamento catalogo…</div>
+
+      <div class="total">
+        <span>Totale</span>
+        <span id="total">€ 0,00</span>
+      </div>
+
+      <div class="pay-buttons">
+        <button type="button" class="stripe" id="stripeBtn">Paga con Stripe (carta) →</button>
+        <div id="paypal-button-container"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hint">
+        <strong>Modalità test:</strong><br>
+        — <strong>Stripe</strong>: carte fittizie da <a href="https://stripe.com/docs/testing" target="_blank">stripe.com/docs/testing</a>.
+        Happy path: <code>4242 4242 4242 4242</code>. SCA: <code>4000 0027 6000 3184</code>. Fallimento: <code>4000 0000 0000 9995</code>.
+        Data futura qualsiasi, CVC qualsiasi, CAP qualsiasi.<br>
+        — <strong>PayPal</strong>: serve un account buyer sandbox creato su
+        <a href="https://developer.paypal.com/dashboard/accounts" target="_blank">developer.paypal.com → Sandbox Accounts</a>.
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/cart.js" type="module"></script>
+</body>
+</html>

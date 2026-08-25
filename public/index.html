@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouBiData · Demo invio email</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      margin: 0;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .subtitle { color: #6e6e73; font-size: 14px; margin-bottom: 28px; }
+    .preview {
+      background: #f5f5f7;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+    .preview .row { display: flex; gap: 8px; padding: 4px 0; }
+    .preview .label { color: #6e6e73; min-width: 90px; }
+    .preview .value { color: #1d1d1f; font-weight: 500; word-break: break-all; }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #0071e3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button:hover:not(:disabled) { background: #0058b9; }
+    button:disabled { background: #999; cursor: not-allowed; }
+    .status {
+      margin-top: 20px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    .status.success { background: #d1f4dd; color: #1a6e3a; display: block; }
+    .status.error { background: #fde2e2; color: #a8160e; display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📧 Demo invio email</h1>
+    <p class="subtitle">Premi il bottone per inviare l'email preconfigurata.</p>
+
+    <div class="preview">
+      <div class="row"><span class="label">Destinatario:</span><span class="value" id="previewTo">…</span></div>
+      <div class="row"><span class="label">Oggetto:</span><span class="value" id="previewSubject">…</span></div>
+    </div>
+
+    <button type="button" id="sendBtn">Invia email</button>
+
+    <div id="status" class="status"></div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #eee;font-size:13px;color:#6e6e73;text-align:center;line-height:1.8;">
+      Demo pagamenti Stripe + PayPal → <a href="/cart.html" style="color:#0071e3;text-decoration:none;font-weight:600;">vai al carrello</a><br>
+      Back-office ordini → <a href="/admin.html" style="color:#0071e3;text-decoration:none;font-weight:600;">vai all'admin</a>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('sendBtn');
+    const status = document.getElementById('status');
+
+    fetch('/config')
+      .then(r => r.json())
+      .then(cfg => {
+        document.getElementById('previewTo').textContent = cfg.to;
+        document.getElementById('previewSubject').textContent = cfg.subject;
+      });
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Invio in corso...';
+      status.className = 'status';
+      status.textContent = '';
+
+      try {
+        const res = await fetch('/send', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.ok) {
+          status.className = 'status success';
+          status.textContent = `✅ Email inviata! ID: ${data.id}`;
+        } else {
+          status.className = 'status error';
+          status.textContent = `❌ Errore: ${data.error}`;
+        }
+      } catch (err) {
+        status.className = 'status error';
+        status.textContent = `❌ Errore di rete: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Invia email';
+      }
+    });
+  </script>
+</body>
+</html>

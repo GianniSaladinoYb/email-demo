@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouBiData · Back-office ordini</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      margin: 0;
+      padding: 24px 20px 60px;
+      min-height: 100vh;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    h1 { margin: 0; font-size: 22px; }
+    .demo-banner {
+      background: #fff3cd;
+      border: 1px solid #ffe69c;
+      color: #856404;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    .controls button {
+      padding: 6px 12px;
+      border: 1px solid #d2d2d7;
+      background: white;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .empty {
+      background: white;
+      padding: 48px;
+      border-radius: 12px;
+      text-align: center;
+      color: #6e6e73;
+    }
+    .order {
+      background: white;
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .order-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .order-id {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      color: #6e6e73;
+    }
+    .status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .status.pending { background: #f5f5f7; color: #6e6e73; }
+    .status.paid { background: #d1f4dd; color: #1a6e3a; }
+    .status.shipped { background: #cce5ff; color: #004085; }
+    .status.delivered { background: #c3e6cb; color: #155724; }
+    .status.failed { background: #fde2e2; color: #a8160e; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .grid .col h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #6e6e73;
+      margin: 0 0 6px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .grid .col p { margin: 2px 0; line-height: 1.5; }
+    .items { font-size: 13px; }
+    .items .item { padding: 4px 0; border-bottom: 1px solid #f5f5f7; }
+    .items .item:last-child { border-bottom: none; }
+    .actions {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #f0f0f3;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .actions select {
+      padding: 8px 10px;
+      border: 1px solid #d2d2d7;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .actions button {
+      padding: 8px 14px;
+      background: #0071e3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .actions button:hover:not(:disabled) { background: #0058b9; }
+    .actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .actions button.secondary { background: white; color: #0071e3; border: 1px solid #0071e3; }
+    .shipment-info {
+      background: #f5f5f7;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #1d1d1f;
+      line-height: 1.5;
+    }
+    .closure {
+      background: white;
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      border-left: 4px solid #5d3fd3;
+    }
+    .closure h2 { margin: 0 0 6px; font-size: 16px; }
+    .closure .summary { font-size: 13px; color: #6e6e73; margin-bottom: 14px; }
+    .closure .summary strong { color: #1d1d1f; }
+    .closure-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .closure-actions button {
+      padding: 9px 16px;
+      background: #5d3fd3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .closure-actions button:hover:not(:disabled) { background: #4a30b0; }
+    .closure-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .closure-actions a.report-link {
+      font-size: 13px;
+      color: #5d3fd3;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .closure-result {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 10px 12px;
+      border-radius: 6px;
+    }
+    .closure-result.ok { background: #ede9fb; color: #3a2a80; }
+    .closure-result.err { background: #fde2e2; color: #a8160e; }
+    .fiscal-badge {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #ede9fb;
+      color: #5d3fd3;
+    }
+    .fiscal-badge.none { background: #f5f5f7; color: #6e6e73; }
+    .nav { font-size: 13px; }
+    .nav a { color: #0071e3; text-decoration: none; margin-right: 14px; }
+    code { background: #f5f5f7; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/">← Demo email</a>
+      <a href="/cart.html">Carrello</a>
+    </div>
+
+    <div class="header">
+      <h1>📋 Back-office ordini</h1>
+      <div class="controls">
+        <button id="refreshBtn">🔄 Aggiorna</button>
+      </div>
+    </div>
+
+    <div class="demo-banner">
+      <strong>⚠️ Demo mode</strong> — questa pagina <strong>non ha autenticazione</strong>.
+      In produzione richiederebbe login con ruoli (es. <code>operator</code>, <code>admin</code>),
+      audit log delle azioni, e probabilmente sarebbe su un sotto-dominio separato.
+    </div>
+
+    <div class="closure" id="closurePanel" style="display:none;">
+      <h2>🧾 Chiusura giornaliera</h2>
+      <div class="summary" id="closureSummary"></div>
+      <div class="closure-actions">
+        <button id="closureBtn">Invia all'Agenzia delle Entrate</button>
+        <a class="report-link" id="reportLink" href="/api/acube/report" target="_blank" rel="noopener" style="display:none;">⬇️ Scarica report CSV</a>
+      </div>
+      <div class="closure-result" id="closureResult" style="display:none;"></div>
+    </div>
+
+    <div id="ordersList">Caricamento ordini…</div>
+  </div>
+
+  <script>
+    const eur = (cents) => (cents / 100).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+    const fmt = (iso) => iso ? new Date(iso).toLocaleString('it-IT') : '—';
+    const ordersList = document.getElementById('ordersList');
+
+    async function loadOrders() {
+      ordersList.innerHTML = 'Caricamento ordini…';
+      try {
+        const res = await fetch('/api/admin/orders');
+        const data = await res.json();
+        renderOrders(data.orders || []);
+      } catch (err) {
+        ordersList.innerHTML = `<div class="empty">Errore: ${err.message}</div>`;
+      }
+    }
+
+    function renderOrders(orders) {
+      if (orders.length === 0) {
+        ordersList.innerHTML = '<div class="empty">Nessun ordine ancora. <a href="/cart.html">Vai al carrello</a> per crearne uno.</div>';
+        return;
+      }
+      ordersList.innerHTML = orders.map(renderOrder).join('');
+      attachHandlers();
+    }
+
+    function renderOrder(o) {
+      const itemsHtml = o.items.map(i => `<div class="item">${i.qty} × <strong>${i.id}</strong></div>`).join('');
+      const addr = o.shippingAddress;
+      const addrHtml = addr ? `
+        <p><strong>${escapeHtml(addr.name || '')}</strong></p>
+        <p>${escapeHtml(addr.line1 || '')}</p>
+        ${addr.line2 ? `<p>${escapeHtml(addr.line2)}</p>` : ''}
+        <p>${escapeHtml(addr.postalCode || '')} ${escapeHtml(addr.city || '')} ${addr.state ? '(' + escapeHtml(addr.state) + ')' : ''}</p>
+        <p>${escapeHtml(addr.country || '')}</p>
+      ` : '<p style="color:#999;">Indirizzo non disponibile</p>';
+      const custHtml = o.customer ? `
+        <p>${escapeHtml(o.customer.name || '—')}</p>
+        <p>${escapeHtml(o.customer.email || '—')}</p>
+        ${o.customer.phone ? `<p>📞 ${escapeHtml(o.customer.phone)}</p>` : ''}
+      ` : '<p style="color:#999;">Dati cliente non disponibili</p>';
+
+      return `
+        <div class="order" data-order-id="${o.id}">
+          <div class="order-head">
+            <div>
+              <div class="order-id">#${o.id}</div>
+              <div style="font-size:12px;color:#6e6e73;">Creato ${fmt(o.createdAt)} · ${o.provider}</div>
+            </div>
+            <div style="text-align:right;">
+              <span class="status ${o.status}">${o.status}</span>
+              <div style="font-weight:600;margin-top:4px;">${eur(o.totalCents)}</div>
+              ${fiscalBadge(o)}
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="col">
+              <h3>Articoli</h3>
+              <div class="items">${itemsHtml}</div>
+            </div>
+            <div class="col">
+              <h3>Cliente</h3>
+              ${custHtml}
+            </div>
+            <div class="col">
+              <h3>Indirizzo spedizione</h3>
+              ${addrHtml}
+            </div>
+          </div>
+
+          ${renderActions(o)}
+        </div>
+      `;
+    }
+
+    function renderActions(o) {
+      if (o.status === 'paid' && !o.shipment) {
+        return `
+          <div class="actions">
+            <select data-courier-for="${o.id}">
+              <option value="BRT">BRT — Bartolini</option>
+              <option value="GLS">GLS</option>
+              <option value="PTI">Poste Italiane</option>
+              <option value="SDA">SDA</option>
+              <option value="TNT">TNT</option>
+              <option value="DHL">DHL Express</option>
+              <option value="FEDEX">FedEx</option>
+              <option value="UPS">UPS</option>
+              <option value="AMAZON-SHIPPING">Amazon Shipping</option>
+            </select>
+            <button data-ship-action="${o.id}">📦 Genera spedizione</button>
+          </div>
+        `;
+      }
+      if (o.shipment) {
+        return `
+          <div class="actions">
+            <div class="shipment-info">
+              <strong>Spedizione:</strong> ${o.shipment.courier} · <code>${o.shipment.trackingNumber}</code>
+              ${o.shipment.lastStatus ? ` · <em>${o.shipment.lastStatus}</em>` : ''}
+            </div>
+            <button class="secondary" data-track-action="${o.id}">🔄 Aggiorna tracking</button>
+          </div>
+        `;
+      }
+      if (o.status === 'pending') {
+        return `<div class="actions"><em style="color:#6e6e73;font-size:13px;">In attesa di conferma pagamento…</em></div>`;
+      }
+      return '';
+    }
+
+    function attachHandlers() {
+      document.querySelectorAll('[data-ship-action]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const orderId = btn.dataset.shipAction;
+          const sel = document.querySelector(`[data-courier-for="${orderId}"]`);
+          const courier = sel.value;
+          btn.disabled = true; btn.textContent = 'Creazione…';
+          try {
+            const res = await fetch(`/api/qapla/create-shipment/${orderId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ courier }),
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            await loadOrders();
+          } catch (err) {
+            alert('Errore: ' + err.message);
+            btn.disabled = false; btn.textContent = '📦 Genera spedizione';
+          }
+        });
+      });
+      document.querySelectorAll('[data-track-action]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const orderId = btn.dataset.trackAction;
+          btn.disabled = true; btn.textContent = 'Aggiornamento…';
+          try {
+            await fetch(`/api/qapla/track/${orderId}`);
+            await loadOrders();
+          } catch (err) {
+            alert('Errore: ' + err.message);
+          } finally {
+            btn.disabled = false; btn.textContent = '🔄 Aggiorna tracking';
+          }
+        });
+      });
+    }
+
+    function fiscalBadge(o) {
+      if (o.fiscalReceipt) {
+        return `<div class="fiscal-badge" title="Trasmesso AdE">🧾 ${o.fiscalReceipt.documentNumber || o.fiscalReceipt.status}</div>`;
+      }
+      const paid = o.paidAt || ['paid', 'shipped', 'delivered'].includes(o.status);
+      return paid ? `<div class="fiscal-badge none">scontrino da trasmettere</div>` : '';
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[c]));
+    }
+
+    // ── Chiusura giornaliera (ACube) ───────────────────────────────
+    const closurePanel = document.getElementById('closurePanel');
+    const closureSummary = document.getElementById('closureSummary');
+    const closureBtn = document.getElementById('closureBtn');
+    const closureResult = document.getElementById('closureResult');
+    const reportLink = document.getElementById('reportLink');
+
+    async function loadClosure() {
+      try {
+        const res = await fetch('/api/acube/pending');
+        const data = await res.json();
+        if (!data.ok) return;
+        closurePanel.style.display = 'block';
+        if (data.count === 0) {
+          closureSummary.innerHTML = 'Nessun ordine in attesa di trasmissione.';
+          closureBtn.disabled = true;
+        } else {
+          closureSummary.innerHTML = `<strong>${data.count}</strong> ordini pagati da trasmettere · totale <strong>${eur(data.totalCents)}</strong>`;
+          closureBtn.disabled = false;
+        }
+      } catch (err) {
+        /* pannello resta nascosto se ACube non risponde */
+      }
+    }
+
+    closureBtn.addEventListener('click', async () => {
+      closureBtn.disabled = true;
+      closureBtn.textContent = 'Trasmissione in corso…';
+      closureResult.style.display = 'none';
+      try {
+        const res = await fetch('/api/acube/daily-closure', { method: 'POST' });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Errore sconosciuto');
+        const okN = data.emitted.length;
+        const errN = data.errors.length;
+        closureResult.className = 'closure-result ' + (errN ? 'err' : 'ok');
+        closureResult.style.display = 'block';
+        closureResult.innerHTML =
+          `✅ <strong>${okN}</strong> scontrini trasmessi all'Agenzia delle Entrate.` +
+          (okN ? '<br>' + data.emitted.map((e) => `• ordine ${e.orderId} → ${e.documentNumber || e.status} ${e.transactionId ? '(tx ' + e.transactionId + ')' : ''}`).join('<br>') : '') +
+          (errN ? `<br>⚠️ ${errN} errori: ` + data.errors.map((e) => `${e.orderId} (${e.error})`).join(', ') : '');
+        reportLink.style.display = okN ? 'inline' : 'none';
+        await loadOrders();
+        await loadClosure();
+      } catch (err) {
+        closureResult.className = 'closure-result err';
+        closureResult.style.display = 'block';
+        closureResult.textContent = 'Errore: ' + err.message;
+      } finally {
+        closureBtn.textContent = "Invia all'Agenzia delle Entrate";
+      }
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => { loadOrders(); loadClosure(); });
+    loadOrders();
+    loadClosure();
+    setInterval(() => { loadOrders(); loadClosure(); }, 8000);  // refresh ogni 8 secondi
+  </script>
+</body>
+</html>
